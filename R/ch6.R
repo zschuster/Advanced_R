@@ -72,3 +72,36 @@ f <- function(x) {
 
 # f(10) will return 202
 f(10)
+
+
+# 6.4.6 -------------------------------------------------------------------
+
+# 1
+x <- sample(replace = TRUE, 20, x = c(1:10, NA))
+xx = sample(c(1:10, NA), size = 20, replace = TRUE)
+
+y <- runif(min = 0, max = 1, 20)
+yy = runif(20, min = 0, max = 1)
+
+cor(m = "k", y = y, u = "p", x = x)
+cor(x, y, use = "pairwise.complete.obs",
+    method = "kendall")
+
+# 2
+f1 <- function(x = {y <- 1; 2}, y = 0) {
+  x + y
+}
+
+# f1() will return 3 because of the lazy evaluation of y
+f1()
+
+
+# 3
+f2 <- function(x = z) {
+  z <- 100
+  x
+}
+
+# This function will return 100 as x evaluates to z which is defined inside the
+# function body
+f2()
