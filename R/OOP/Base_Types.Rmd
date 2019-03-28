@@ -1,0 +1,133 @@
+---
+title: "12: Base types"
+author: "Zach Schuster"
+date: "3/27/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intro
+
+* S3 and S4 use generic function OOP which is rather different from the encapsulated OOP used by most languages popular today
+
+* There is disagreement about the relative importance of the OOP systems. I think S3 is most important, followed by R6, then S4. Others believe that S4 is most important, followed by RC, and that S3 should be avoided. This means that different R communities use different systems.
+
+* The main reason to use OOP is polymorphism (literally: many shapes). Polymorphism means that a developer can consider a function’s interface separately from its implementation, making it possible to use the same function form for different types of input.
+
+### There are two main paradigms of object-oriented programming which differ in how methods and classes are related. In this book, we’ll borrow the terminology of Extending R (Chambers 2016) and call these paradigms encapsulated and functional:
+
+* In encapsulated OOP, methods belong to objects or classes, and method calls typically look like object.method(arg1, arg2). This is called encapsulated because the object encapsulates both data (with fields) and behaviour (with methods), and is the paradigm found in most popular languages.
+
+* In functional OOP, methods belong to generic functions, and method calls look like ordinary function calls: generic(object, arg2, arg3). This is called functional because from the outside it looks like a regular function call, and internally the components are also functions.
+
+***
+
+### Disclaimer: Hadley is the main contributer for `sloop`
+Introducing `sloop` package. `sloop::otype` returns the underlying object type of the input
+
+```{r sloop}
+
+library(sloop)
+
+otype(1:10)
+otype(mtcars)
+
+mle_obj <- stats4::mle(function(x = 1) (x - 2) ^ 2)
+otype(mle_obj)
+
+```
+
+***
+
+## Base Types
+
+To tell the difference between a base and OO object, use is.object() or `sloop::otype()`
+
+Technically, the difference between base and OO objects is that OO objects have a “class” attribute:
+
+```{r classes}
+attr(1:10, "class")
+#> NULL
+
+attr(mtcars, "class")
+#> [1] "data.frame"
+```
+
+safer to use sloop::s3_class() instead of `is.object` or manually pulling class attribute as `otype` returns the implicit class that the S3 and S4 systems will use to pick methods. 
+```{r}
+sloop::s3_class(x)
+#> [1] "matrix"  "integer" "numeric"
+```
+
+While only OO objects have a class attribute, every object has a base type
+
+```{r}
+typeof(1:10)
+#> [1] "integer"
+
+typeof(mtcars)
+#> [1] "list"
+```
+
+
+* In total, there are 25 different base types.
+
+These types are most important in C code, so you’ll often see them called by their C type names. I’ve included those in parentheses.
+
+#### Vectors
+
+* NULL (NULLSXP)
+* logical (LGLSXP)
+* integer (INTSXP)
+* double (REALSXP)
+* complex (CPLSXP)
+* character (STRSXP)
+* list (VECSXP)
+* raw (RAWSXP)
+
+#### Functions
+
+* closure (regular R functions, CLOSXP)
+* special (internal functions, SPECIALSXP)
+* builtin (primitive functions, BUILTINSXP)
+
+#### Environments
+
+* environment (ENVSXP)
+
+#### S4
+
+* S4 (S4SXP)
+
+#### Language Components
+
+* symbol (aka name, SYMSXP)
+* language (usually called calls, LANGSXP)
+* pairlist (used for function arguments, LISTSXP)
+
+expression (EXPRSXP) is a special purpose type that’s only returned by parse() and expression()
+
+
+#### esoteric and rarely seen in R. They are important primarily for C code
+
+* externalptr (EXTPTRSXP)
+* weakref (WEAKREFSXP)
+* bytecode (BCODESXP)
+* promise (PROMSXP)
+* ... (DOTSXP)
+* any (ANYSXP)
+
+***
+
+Be careful when talking about the numeric type, because R uses “numeric” to mean three slightly different things:
+
+```{r}
+sloop::s3_class(1)
+#> [1] "double"  "numeric"
+sloop::s3_class(1L)
+#> [1] "integer" "numeric"
+```
+

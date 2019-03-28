@@ -1,0 +1,16 @@
+---
+title: "S3 System"
+author: "Zach Schuster"
+date: "3/27/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intro
+
+"I’d recommend coupling the theoretical knowledge from this chapter with the practical knowledge encoded in the vctrs package."
+
+* The implementation for a specific class is called a method, and the generic finds that method by performing method dispatch.

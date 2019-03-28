@@ -30,7 +30,7 @@ names(funs)[which.max(sapply(funs, num_args))]
 sum(vapply(funs, FUN = function(x) is.null(formals(x)),
            FUN.VALUE = logical(1)))
 
-# 226 primitive functions
+# 226, some primitive some not
 
 ## c
 # funs <- Filter(is.primitive, objs)
