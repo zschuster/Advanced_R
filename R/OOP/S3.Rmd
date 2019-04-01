@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(sloop)
 ```
 
 ## Intro
@@ -14,3 +15,148 @@ knitr::opts_chunk$set(echo = TRUE)
 "I’d recommend coupling the theoretical knowledge from this chapter with the practical knowledge encoded in the vctrs package."
 
 * The implementation for a specific class is called a method, and the generic finds that method by performing method dispatch.
+
+## 12.2.1
+
+1. Describe the difference between t.test() and t.data.frame(). When is each function called?
+
+`t.test` is called as the disbatch function for any subsequent methods. It is a generic function. It is not a method, shown below. `t.data.frame` is the transpose method for class data.frame.
+
+```{r}
+ftype(t.test)
+ftype(t.data.frame)
+
+is_s3_method("t.test")
+is_s3_method("t.data.frame")
+```
+
+2. Make a list of commonly used base R functions that contain . in their name but are not S3 methods.
+
+```{r}
+is_s3_method("weighted.mean")
+is_s3_method("data.frame")
+is_s3_method("prop.table")
+is_s3_method("binom.test")
+# other suggestions?
+```
+
+3. What does the `as.data.frame.data.frame()` method do? Why is it confusing? How could you avoid this confusion in your own code?
+
+It converts a data.frame to a data.frame!It is really confusing because of all the periods. I'd use underscores in the function name to separate methods (seems only logical). To avoid it in code, just call the generic function and let method disbatch work behind the scenes. 
+
+```{r}
+df = data.frame(a = 1:5,
+                b = 6:10)
+
+as.data.frame.data.frame(df)
+identical(df, as.data.frame.data.frame(df))
+```
+
+4. Describe the difference in behaviour in these two calls.
+
+```{r}
+set.seed(1014)
+some_days <- as.Date("2017-01-31") + sample(10, 5)
+
+mean(some_days)
+#> [1] "2017-02-05"
+mean(unclass(some_days))
+#> [1] 17202
+```
+
+
+The first call is being disbatched to the `mean.Date` method whereas the second call is being disbatched to `mean.default` because there is no specific method for class numeric, so it goes to `mean.default`.
+
+5. What class of object does the following code return? What base type is it built on? What attributes does it use?
+
+```{r}
+x <- ecdf(rpois(100, 10))
+x
+
+# class
+class(x)
+
+# base type # closure
+typeof(x)
+
+# also considered a function is R terms # function
+class(unclass(x))
+
+# what attributes does it use? # class, call
+attributes(x)
+```
+
+6. What class of object does the following code return? What base type is it built on? What attributes does it use?
+
+```{r}
+x <- table(rpois(100, 5))
+x
+
+class(x) # table
+class(unclass(x)) # underlying is an array
+```
+
+
+## 13.3.4
+
+1. Write a constructor for data.frame objects. What base type is a data frame built on? What attributes does it use? What are the restrictions placed on the individual elements? What about the names?
+
+* data.frame is built on a list
+* it uses the class, names, and row.names attributes
+* all elements of the list must be the same length. Every element of list must only be one class
+* names can not have special characters
+
+```{r}
+new_data.frame = function(x = list(),
+                          col_names = character(), # names attr
+                          row_names = character()) { # row.names attr
+  
+  stopifnot(is.character(col_names))
+  stopifnot(is.character(row_names))
+  
+  structure(
+    x,
+    class = 'data.frame',
+    names = col_names,
+    row.names = row_names
+  )
+}
+
+(new_df = new_data.frame(list(1:5, 6:10),
+               col_names = c("a", "b"),
+               row_names = as.character(1:5))
+)
+class(new_df)
+```
+
+2. Enhance my factor() helper to have better behaviour when one or more values is not found in levels. What does base::factor() do in this situation?
+
+```{r}
+validate_factor <- function(x) {
+  values <- unclass(x)
+  levels <- attr(x, "levels")
+
+  if (!all(!is.na(values) & values > 0)) {
+    stop(
+      "All `x` values must be non-missing and greater than zero",
+      call. = FALSE
+    )
+  }
+
+  if (length(levels) < max(values)) {
+    stop(
+      "There must at least as many `levels` as possible values in `x`",
+      call. = FALSE
+    )
+  }
+
+  x
+}
+
+
+factor <- function(x = character(), levels = unique(x)) {
+  ind <- match(x, levels)
+  validate_factor(new_factor(ind, levels))
+}
+```
+
