@@ -160,3 +160,120 @@ factor <- function(x = character(), levels = unique(x)) {
 }
 ```
 
+
+3. Carefully read the source code of factor(). What does it do that my constructor does not?
+
+```{r}
+factor
+```
+
+* There appears to be more in depth error checking
+* There is the option to make an ordered factor
+* The error messages are generalized
+
+4. Factors have an optional “contrasts” attribute. Read the help for C(), and briefly describe the purpose of the attribute. What type should it have? Rewrite the new_factor() constructor to include this attribute.
+
+for our purposes, it should be a matrix. It allows us to compare different groups of levels within a factor, usually done through a lm or glm or aov.
+
+```{r}
+new_factor <- function(x = integer(), levels = character(),
+                       contrasts = NULL) {
+  stopifnot(is.integer(x))
+  stopifnot(is.character(levels))
+
+  fac = structure(x,
+                  levels = levels,
+                  class = "factor")
+  
+  # add contrasts if there are any
+  if (!is.null(contrasts && is.matrix(contrasts))) {
+    if (length(levels) == nrow(contrasts)) {
+      fac = C(fac, contr = contrasts)
+      return(fac)
+    }
+  } else {
+      stop("contrasts should be a matrix with nrow == number of levels")
+    }
+}
+
+# make contrasts
+cont = matrix(c(1, 1, -1, -1,
+                1, 1, -1, -1,
+                -1, -1, 1, 1,
+                -1, -1, 1, 1),
+              byrow = TRUE, nrow = 4)
+
+(x = new_factor(rep(1L:4L, each = 3),
+           levels = c('apple', 'orange', 'grean_beans', 'broccoli'),
+           contrasts = cont))
+```
+
+
+5. Read the documentation for utils::as.roman(). How would you write a constructor for this class? Does it need a validator? What might a helper do?
+
+```{r}
+?utils::as.roman
+```
+
+You could write a constructor function that take an integer or character vector as an argument and use the str class to assign the class 'roman' to it. 
+
+A validator would be nice to make sure numbers are between 1 and 3899
+
+A helper could help with converting numeric to integer or something like that. 
+
+
+## 13.4.4
+
+1. Read the source code for t() and t.test() and confirm that t.test() is an S3 generic and not an S3 method. What happens if you create an object with class test and call t() with it? Why?
+
+```{r}
+t
+t.test
+sloop::is_s3_generic('t.test')
+
+x = structure(1:10, class = 'test')
+t(x)
+
+sloop::s3_dispatch(t(x))
+sloop::s3_dispatch(t.test(x))
+```
+
+Because `t` also is a generic, it searches through possible methods. `t.test` is a possible option, so it gets called. I believe `t.test` then calls method dispatch, which calls the `t.test.default`. 
+
+2. What generics does the table class have methods for?
+
+```{r}
+s3_methods_class("table")
+```
+
+3. What generics does the ecdf class have methods for?
+
+```{r}
+s3_methods_class("ecdf")
+```
+
+4. Which base generic has the greatest number of defined methods?
+
+```{r}
+builtin = builtins()
+ind = unlist(lapply(builtin, function(x) is.function(get(x))))
+base_funs = builtin[ind]
+
+# get base generics
+base_generics = base_funs[vapply(base_funs, is_s3_generic, FUN.VALUE = logical(1))]
+
+# how many methods does each have?
+num_args = unlist(lapply(base_generics, function(x) nrow(s3_methods_generic(x))))
+base_generics[which.max(num_args)]
+
+s3_methods_generic('print')
+```
+
+5. 
+
+
+
+
+
+
+
