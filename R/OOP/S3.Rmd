@@ -269,10 +269,97 @@ base_generics[which.max(num_args)]
 s3_methods_generic('print')
 ```
 
-5. 
+5. Carefully read the documentation for `UseMethod()` and explain why the following code returns the results that it does. What two usual rules of function evaluation does `UseMethod()` violate?
+
+```{r}
+g <- function(x) {
+  x <- 10
+  y <- 10
+  UseMethod("g")
+}
+g.default <- function(x) c(x = x, y = y)
+
+x <- 1
+y <- 1
+g(x)
+```
+
+useMethod creates a new function call with arguments matched as they came in to the generic. Any local variables defined before the call to UseMethod are retained (unlike S). Any statements after the call to UseMethod will not be evaluated as UseMethod does not return
+
+Because g(x) only takes the argument x, y is then evaluated as 10 because it looks in the local environment before `useMethod` was called.
+
+6. What are the arguments to [? Why is this a hard question to answer?
+
+```{r}
+?`[`
+formals(`[`)
+
+```
+
+This is difficult to find because is an operator which is generic. 
 
 
+## 13.5.1
 
+1.  Categorise the objects returned by lm(), factor(), table(), as.Date(), as.POSIXct() ecdf(), ordered(), I() into the styles described above.
+
+```{r}
+x = table(1:5, 1:5) # matrix underneath
+class(unclass(x))
+
+
+```
+
+This is pretty confusing to me. No real 'styles' were mentioned above
+
+2. What would a constructor function for lm objects, new_lm(), look like? Use ?lm and experimentation to figure out the required fields and their types.
+
+```{r}
+?lm
+```
+
+Look at the Value section of the documentation to build a list. In addition, you will need to set the class to "lm".
+
+
+## 13.6.3
+
+1.  How does [.Date support subclasses? How does it fail to support subclasses?
+
+```{r}
+`[.Date`
+?oldClass
+```
+
+It stores the old class to the `cl` variable and then reassigns that class to the new object.
+It does not support any subclasses of date as the method would not get called?
+
+2. R has two classes for representing date time data, POSIXct and POSIXlt, which both inherit from POSIXt. Which generics have different behaviours for the two classes? Which generics share the same behaviour?
+
+```{r}
+sloop::s3_methods_class("POSIXct")
+sloop::s3_methods_class("POSIXlt")
+# sloop::s3_methods_class("POSIXt")
+```
+
+Look for the different classes?
+
+3. What do you expect this code to return? What does it actually return? Why?
+
+```{r}
+generic2 <- function(x) UseMethod("generic2")
+generic2.a1 <- function(x) "a1"
+generic2.a2 <- function(x) "a2"
+generic2.b <- function(x) {
+  class(x) <- "a1"
+  print(paste('class:', class(x)))
+  NextMethod()
+  # generic2(x)
+}
+
+generic2(structure(list(), class = c("b", "a2")))
+```
+
+I believe it looks for the next method according to the class of the object supplied, which has a class of c("b", "a2"). Therefore, the next method is the second method, generic2.a2.
 
 
 
