@@ -361,6 +361,59 @@ generic2(structure(list(), class = c("b", "a2")))
 
 I believe it looks for the next method according to the class of the object supplied, which has a class of c("b", "a2"). Therefore, the next method is the second method, generic2.a2.
 
+## 13.7.5
 
+1. Explain the differences in dispatch below:
 
+```{r}
+length.integer <- function(x) 10
 
+x1 <- 1:5
+class(x1)
+#> [1] "integer"
+s3_dispatch(length(x1))
+#>  * length.integer
+#>    length.numeric
+#>    length.default
+#> => length (internal)
+
+x2 <- structure(x1, class = "integer")
+class(x2)
+#> [1] "integer"
+s3_dispatch(length(x2))
+#> => length.integer
+#>    length.default
+#>  * length (internal)
+
+attributes(x1)
+attributes(x2)
+```
+
+When defining a variable using `structure`, you actually set the class attribute. Because the attribute is not set for x1, it defaults to the internal method. The length.integer method is used for x2 because it's class attribute is set. `UseMethod` searches for the class attribute when disbatching. 
+
+2. What classes have a method for the Math group generic in base R? Read the source code. How do the methods work?
+
+```{r}
+s3_methods_generic("Math")
+
+Math.difftime
+
+Math.data.frame
+summary.data.frame
+
+Math.data.frame = function(x) {'fooled you!'}
+data(iris)
+abs(iris)
+
+rm(Math.data.frame)
+```
+
+.Generic is called to pull the actual function being called.
+
+3. Math.difftime() is more complicated than I described. Why?
+
+```{r}
+Math.difftime
+```
+
+It excludes many of the Math functions and provides appropriate error messaging. 
