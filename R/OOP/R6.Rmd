@@ -1,0 +1,163 @@
+---
+title: "R6"
+author: "Zach Schuster"
+date: "4/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(R6)
+```
+
+## 14.2.6
+
+1. Create a bank account R6 class that stores a balance and allows you to deposit and withdraw money. Create a subclass that throws an error if you attempt to go into overdraft. Create another subclass that allows you to go into overdraft, but charges you a fee.
+
+```{r}
+
+# bank account class
+Account = R6Class(
+  "Account",
+  public = list(
+    balance = NULL,
+    
+    initialize = function(balance) {
+      self$balance = balance
+      invisible(self)
+    },
+    deposit = function(amount) {
+      self$balance = self$balance + amount
+      invisible(self)
+    },
+    withdraw = function(amount) {
+      self$balance = self$balance - amount
+      invisible(self)
+    }
+  ))
+
+zachs_account = Account$new(balance = 100)
+zachs_account$withdraw(50)
+zachs_account
+zachs_account$deposit(100)
+zachs_account
+
+# This class doesn't allow you to go into overdraft
+AccountOverdraft = R6Class(
+  "AccountOverdraft",
+  inherit = Account,
+  public = list(
+    withdraw = function(amount) {
+      new_balance = self$balance - amount
+      if (new_balance < 0) {
+        stop("You can't go into overdraft. Take out less money!")
+      } else {
+        super$withdraw(amount)
+      }
+    }
+  )
+)
+
+ovdft = AccountOverdraft$new(100)
+ovdft$withdraw(101)
+ovdft$withdraw(99)
+ovdft
+
+
+# You can go into overdraft with a fee. This assumes the balance before withdrawal is above 0.
+AccountOverdraftFee = R6Class(
+  "AccountOverdraftFee",
+  inherit = Account,
+  public = list(
+    withdraw = function(amount) {
+      new_balance = self$balance - amount
+      if (new_balance < 0) {
+        amount_over = 0 - new_balance
+        fee = 0.03 * amount_over
+        self$balance = new_balance - fee
+        print("You've been charged a 3% fee on overdrafted funds.")
+        invisible(self)
+      } else {
+        super$withdraw(amount)
+      }
+    }
+  )
+)
+
+ovdft = AccountOverdraftFee$new(100)
+ovdft$withdraw(101)
+ovdft
+ovdft = AccountOverdraftFee$new(100)
+ovdft$withdraw(99)
+ovdft
+
+```
+
+2. Create an R6 class that represents a shuffled deck of cards. You should be able to draw cards from the deck with $draw(n), and return all cards to the deck and reshuffle with $reshuffle(). Use the following code to make a vector of cards.
+
+```{r}
+
+CardDeck = R6Class(
+  "CardDeck",
+  public = list(
+    # defined by hadley
+    suit = c("♠", "♥", "♦", "♣"),
+    value = c("A", 2:10, "J", "Q", "K"),
+    cards = paste0(rep(value, 4), suit),
+    
+    draw = function(n) {
+      pulled = sample(cards, size = n, replace = FALSE)
+      self$cards = setdiff(self$cards, pulled)
+      return(pulled)
+    },
+    reshuffle = function() {
+      # Doing this in two steps for readability. recreate full deck.
+      self$cards = paste0(rep(self$value, 4), self$suit)
+      # reshuffle the cards
+      self$cards = sample(self$cards)
+    }
+
+  )
+)
+
+zachs_deck = CardDeck$new()
+zachs_deck$draw(5)
+length(zachs_deck$cards)
+zachs_deck$reshuffle()
+length(zachs_deck$cards)
+```
+
+3. Why can’t you model a bank account or a deck of cards with an S3 class?
+
+A few reasons. 
+
+* The balance of a bank account is all tied to the instance of the class, which makes it much easier to keep track of deposits and withrawals and balances. It is all contained.
+* Having reference semantics in R6 makes life way more cenvenient and efficient.
+
+4. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
