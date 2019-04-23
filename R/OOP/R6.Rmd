@@ -135,10 +135,97 @@ A few reasons.
 * The balance of a bank account is all tied to the instance of the class, which makes it much easier to keep track of deposits and withrawals and balances. It is all contained.
 * Having reference semantics in R6 makes life way more cenvenient and efficient.
 
-4. 
+4. Create an R6 class that allows you to get and set the current timezone. You can access the current timezone with Sys.timezone() and set it with Sys.setenv(TZ = "newtimezone"). When setting the time zone, make sure the new time zone is in the list provided by OlsonNames().
 
+```{r}
 
+Timezone = R6Class(
+  "Timezone",
+  public = list(
+    # get all time zones that can be set
+    time_zones = OlsonNames(),
+    # This sets the original time zone as EST for our purposes.
+    original_zone = "America/New_York",
+    get_tz = function() {
+      return(Sys.timezone())
+    },
+    set_tz = function(zone = "America/New_York") {
+      Sys.setenv(TZ = zone)
+      # This invisibly returns TRUE
+    },
+    reset_tz = function() {
+      Sys.setenv(TZ = self$original_zone)
+    }
+  ))
 
+zone = Timezone$new()
+
+zone$time_zones
+
+zone$get_tz()
+zone$set_tz("Poland")
+Sys.time()
+zone$get_tz()
+
+zone$reset_tz()
+Sys.timezone()
+
+```
+
+5. Create an R6 class that manages the current working directory. It should have $get() and $set() methods.
+
+```{r}
+
+WDManager = R6Class(
+  "WDManager",
+  public = list(
+    get = function() {
+      return(getwd())
+    },
+    set = function(path = "~") {
+      setwd(path)
+    }
+  )
+)
+
+# store the old working directory
+old_wd = getwd()
+wd_manager = WDManager$new()
+
+wd_manager$get()
+
+wd_manager$set()
+wd_manager$get()
+
+# restore working directory
+wd_manager$set(old_wd)
+
+# double check with base R
+getwd()
+```
+
+6. Why can’t you model the time zone or current working directory with an S3 class?
+
+It is not as easy to use functionality like get or set. It would then become get.tz or something similar so there has to be an underlying class that would be input to the function. Not nearly as simple in my opinion. 
+
+7. What base type are R6 objects built on top of? What attributes do they have?
+
+```{r}
+
+TestClass = R6Class(
+  "TestClass",
+  public = list()
+)
+
+class(unclass(TestClass))
+class(unclass(TestClass$new()))
+
+# R6 is build on an environment
+
+attributes(TestClass)
+attributes(TestClass$new())
+
+```
 
 
 
