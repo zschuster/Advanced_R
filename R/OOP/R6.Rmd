@@ -228,9 +228,194 @@ attributes(TestClass$new())
 ```
 
 
+## 14.3.3
+
+1. Create a bank account class that prevents you from directly setting the account balance, but you can still withdraw from and deposit to. Throw an error if you attempt to go into overdraft.
+
+```{r}
+
+Account = R6Class(
+  "Account",
+  public = list(
+    initialize = function(balance) {
+      private$.balance = balance
+    },
+    deposit = function(amount) {
+      private$.balance = private$.balance + amount
+      invisible(self)
+    },
+    withdraw = function(amount) {
+      proposed_bal = private$.balance - amount
+      if (proposed_bal < 0) {
+        stop("You can't withdraw more money than you have. Sorry!")
+      }
+      private$.balance = proposed_bal
+      invisible(self)
+    },
+    get_balance = function() {
+      return(private$.balance)
+    }
+  ),
+  private = list(
+    .balance = NULL
+  )
+)
+
+new_acct = Account$new(balance = 100)
+
+# There is now no way to overwrite the balance.
+new_acct$deposit(50)
+new_acct$get_balance()
+
+new_acct$withdraw(500)
+
+```
 
 
+2. Create a class with a write-only $password field. It should have $check_password(password) method that returns TRUE or FALSE, but there should be no way to view the complete password.
 
+```{r}
+
+Password = R6Class(
+  "Password",
+  public = list(
+    initialize = function(password) {
+      private$.password = password 
+    },
+    check_password = function(password) {
+      return(password == private$.password)
+    }
+  ),
+  active = list(
+    password = function(value) {
+      if(missing(value)) {
+        stop("password is write only", call. = FALSE)
+      } else {
+        private$.password = value
+        self
+      }
+    }
+  ),
+  private = list(
+    .password = NULL
+  )
+)
+
+pass_class = Password$new("cool_beanz!")
+
+# first we can check to make sure we know our password
+pass_class$check_password("fish")
+pass_class$check_password("cool_beanz!")
+
+# can we read our password?
+pass_class$password
+
+# set a new password
+pass_class$password = "pass123"
+pass_class$check_password("pass123")
+
+```
+
+3. Extend the Rando class with another active binding that allows you to access the previous random value. Ensure that active binding is the only way to access the value.
+
+I'm taking "previous" to mean the value before the most recent call
+
+```{r}
+
+Rando <- R6::R6Class(
+  "Rando",
+  active = list(
+  random = function(value) {
+    if (missing(value)) {
+      private$.counter = private$.counter + 1L
+      if (private$.counter > 1) {
+        # move the old current value to previous
+        private$.previous = private$.current
+      }
+      # create a new current value
+      private$.current = runif(1)
+      # return the new current value
+      private$.current
+    } else {
+      stop("Can't set `$random`", call. = FALSE)
+    }
+  },
+  previous = function (value) {
+    if (missing(value)) {
+      private$.previous
+    } else {
+      stop ("Can't set `$previous`", call. = FALSE)
+    }
+  }
+  ),
+  private = list(
+    .previous = NULL,
+    .counter = 0L,
+    .current = NULL
+  )
+)
+
+x = Rando$new()
+
+# first time calling there is no previous value
+x$random
+x$previous
+
+# now anytime after there will be a previous value
+x$random
+x$previous
+
+x$random
+x$random
+x$random
+x$random
+x$random
+x$random
+x$previous
+
+```
+
+
+4. Can subclasses access private fields/methods from their parent? Perform an experiment to find out.
+```{r}
+
+Parent = R6Class(
+  "Parent",
+  private = list(
+    .company = "Eastman",
+    test_method = function() {
+      print("private parent class method")
+    }
+  ),
+  public = list(
+    add = function(x, y) {
+      x + y
+    }
+  )
+)
+
+Child = R6Class(
+  "Child",
+  inherit = Parent,
+  public = list(
+    get_parent_co = function() {
+      private$.company
+    },
+    private_method = function() {
+      private$test_method()
+    }
+  )
+)
+
+child_class = Child$new()
+
+# can we access private$.company?
+child_class$get_parent_co()
+child_class$private_method()
+child_class$add(4, 5)
+```
+
+We can access the private methods or fields in the parent class.
 
 
 
