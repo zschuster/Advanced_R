@@ -418,18 +418,33 @@ child_class$add(4, 5)
 We can access the private methods or fields in the parent class.
 
 
+## 14.4.4 Exercises
 
+1. Create a class that allows you to write a line to a specified file. You should open a connection to the file in $initialize(), append a line using cat() in $append_line(), and close the connection in $finalize()
 
+```{r}
 
+LineWrite = R6Class(
+  "LineWrite",
+  public = list(
+    conn = NULL,
+    initialize = function(path) {
+      self$conn = file(description = path, open = "at")
+    },
+    append_line = function(string) {
+      stopifnot(is.character(string))
+      cat("\n", string, file = self$conn)
+    },
+    finalize = function() {
+      #clean up the connection
+      cat("closing", summary(self$conn)$description)
+      close(self$conn)
+    }
+  )
+)
 
+appender = LineWrite$new("14.4.4-1.txt")
+appender$append_line("Green eggs & ham are delicious!")
+rm(appender)
 
-
-
-
-
-
-
-
-
-
-
+```
