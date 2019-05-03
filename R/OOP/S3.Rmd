@@ -94,6 +94,7 @@ x
 
 class(x) # table
 class(unclass(x)) # underlying is an array
+attributes(x)
 ```
 
 
@@ -132,32 +133,28 @@ class(new_df)
 2. Enhance my factor() helper to have better behaviour when one or more values is not found in levels. What does base::factor() do in this situation?
 
 ```{r}
-validate_factor <- function(x) {
-  values <- unclass(x)
-  levels <- attr(x, "levels")
 
-  if (!all(!is.na(values) & values > 0)) {
-    stop(
-      "All `x` values must be non-missing and greater than zero",
-      call. = FALSE
-    )
-  }
+new_factor <- function(x = integer(), levels = character()) {
+  stopifnot(is.integer(x))
+  stopifnot(is.character(levels))
 
-  if (length(levels) < max(values)) {
-    stop(
-      "There must at least as many `levels` as possible values in `x`",
-      call. = FALSE
-    )
-  }
-
-  x
+  structure(
+    x,
+    levels = levels,
+    class = "factor"
+  )
 }
 
 
 factor <- function(x = character(), levels = unique(x)) {
+  if(!all(levels %in% x)) {
+    stop("Some levels are not included in the values of your factor.")
+  }
   ind <- match(x, levels)
-  validate_factor(new_factor(ind, levels))
+  new_factor(ind, levels)
 }
+
+factor(letters[1:3], levels = letters[1:4])
 ```
 
 
@@ -272,18 +269,19 @@ s3_methods_generic('print')
 5. Carefully read the documentation for `UseMethod()` and explain why the following code returns the results that it does. What two usual rules of function evaluation does `UseMethod()` violate?
 
 ```{r}
-g <- function(x) {
+g <- function(x, y) {
   x <- 10
   y <- 10
   UseMethod("g")
 }
 g.default <- function(x) c(x = x, y = y)
 
-x <- 1
-y <- 1
+x <- 5
+y <- 100
 g(x)
 ```
 
+**From the docs**
 useMethod creates a new function call with arguments matched as they came in to the generic. Any local variables defined before the call to UseMethod are retained (unlike S). Any statements after the call to UseMethod will not be evaluated as UseMethod does not return
 
 Because g(x) only takes the argument x, y is then evaluated as 10 because it looks in the local environment before `useMethod` was called.
@@ -298,6 +296,7 @@ formals(`[`)
 
 This is difficult to find because is an operator which is generic. 
 
+## LEFT OFF HERE
 
 ## 13.5.1
 

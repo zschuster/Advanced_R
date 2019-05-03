@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Intro
 
-* S3 and S4 use generic function OOP which is rather different from the encapsulated OOP used by most languages popular today
+* S3 and S4 use generic function OOP which is rather different from the encapsulated OOP used by most languages popular today (Python)
 
 * There is disagreement about the relative importance of the OOP systems. I think S3 is most important, followed by R6, then S4. Others believe that S4 is most important, followed by RC, and that S3 should be avoided. This means that different R communities use different systems.
 
@@ -58,8 +58,8 @@ attr(mtcars, "class")
 
 safer to use sloop::s3_class() instead of `is.object` or manually pulling class attribute as `otype` returns the implicit class that the S3 and S4 systems will use to pick methods. 
 ```{r}
-sloop::s3_class(x)
-#> [1] "matrix"  "integer" "numeric"
+sloop::s3_class(1:10)
+#> [1] "integer" "numeric"
 ```
 
 While only OO objects have a class attribute, every object has a base type
