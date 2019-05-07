@@ -1,0 +1,154 @@
+---
+title: "S4"
+author: "Zach Schuster"
+date: "5/6/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(methods)
+library(lubridate)
+```
+
+
+### 15.2.1
+
+1. `lubridate::period()` returns an S4 class. What slots does it have? What class is each slot? What accessors does it provide?
+
+```{r}
+x = lubridate::period(5)
+
+class?Period
+?lubridate::period
+
+str(x)
+lubridate::minutes(x)
+
+```
+
+There is an accessor function for each of the slots in the `Period` class
+
+2. What other ways can you find help for a method? Read ?"?" and summarise the details.
+
+```{r}
+?"?"
+?period
+# methods?period
+?period(5)
+```
+
+There are multiple different ways of accessing different parts of an S4 method.
+
+
+### 15.3.6
+
+1. Extend the Person class with fields to match utils::person(). Think about what slots you will need, what class each slot should have, and what you’ll need to check in your validity method.
+```{r}
+?utils::person()
+setClass("Person", 
+  slots = c(
+    name = "character", 
+    age = "numeric",
+    email = "character",
+    role = "character",
+    comment = "character"
+  ), 
+  prototype = list(
+    name = NA_character_,
+    age = NA_real_,
+    email = NA_character_,
+    role = NA_character_,
+    comment = NA_character_
+  )
+)
+
+setValidity(
+  "Person",
+  function(object) {
+    slots = attributes(object)
+    slots[["class"]] = NULL
+    
+    slot_lengths = sapply(slots, length)
+    if(length(unique(slot_lengths)) != 1) {
+      "All slots must be of the same length. (same amount of people)"
+    } else {
+      TRUE
+    }
+  }
+)
+
+new("Person", name = "Zach", age = 24)
+new("Person", name = "Zach", age = c(24, 35))
+```
+
+
+2. What happens if you define a new S4 class that doesn’t have any slots? (Hint: read about virtual classes in ?setClass.)
+
+```{r}
+?setClass
+setClass("VirtualClass")
+new("VirtualClass")
+
+```
+
+The most common and useful form of virtual class is the class union, a virtual class that is defined in a call to setClassUnion() rather than a call to setClass(). This call lists the members of the union—subclasses that extend the new class. Methods that are written with the class union in the signature are eligible for use with objects from any of the member classes. Class unions can include as members classes whose definition is otherwise sealed, including basic R data types.
+
+
+3. Imagine you were going to reimplement factors, dates, and data frames in S4. Sketch out the setClass() calls that you would use to define the classes. Think about appropriate slots and prototype.
+
+**Choosing to implement data.frames and ignore factors and dates**
+
+```{r}
+
+setClass(
+  "DataFrame",
+  slots = c(names = "character",
+            row_names = "character",
+            data = "list",
+            frame = "data.frame"),
+  prototype = c(names = NULL,
+                row_names = NA_character_,
+                data = NA_real_,
+                frame = NA)
+)
+
+setMethod("initialize", "DataFrame",
+          function(.Object, ...) {
+            # browser()
+            .Object = callNextMethod()
+            # make sure all data is the same length
+            lengths = unique(sapply(.Object@data, length))
+            if(length(lengths) > 1) {
+              stop("All data must be of same length")
+            }
+            if(length(.Object@row_names) == 0) {
+              .Object@row_names = as.character(1:(length(.Object@data[[1]])))
+            }
+            .Object@frame = structure(.Object@data,
+                                      class = "data.frame",
+                                      names = .Object@names,
+                                      row.names = .Object@row_names)
+            return(.Object)
+          })
+
+tmp = new("DataFrame", data = list(1:5, 6:9), names = c("A", "B"))
+tmp = new("DataFrame", data = list(1:5, 6:10), names = c("A", "B"))
+tmp@frame
+class(tmp@frame)
+```
+
+
+## 15.4.5
+
+
+
+
+
+
+
+
+
+
+
