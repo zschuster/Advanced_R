@@ -79,7 +79,7 @@ setValidity(
   }
 )
 
-new("Person", name = "Zach", age = 24)
+(Zach = new("Person", name = "Zach", age = 24))
 new("Person", name = "Zach", age = c(24, 35))
 ```
 
@@ -142,13 +142,50 @@ class(tmp@frame)
 
 ## 15.4.5
 
+1. Add age() accessors for the Person class.
 
+```{r}
+setGeneric("age", function(x) standardGeneric("age"))
+setMethod("age", "Person", function(x) x@age)
 
+age(Zach)
+```
 
+2. In the definition of the generic, why is it necessary to repeat the name of the generic twice?
 
+```{r}
+?setGeneric()
+```
 
+Because you are creating the function and naming it and then calling method dispatch for that function. The same thing happens in S3.
 
+3. Why does the show() method defined in Section 15.4.3 use is(object)[[1]]? (Hint: try printing the employee subclass.)
 
+```{r}
+setClass("Employee", 
+  contains = "Person", 
+  slots = c(
+    boss = "Person"
+  ),
+  prototype = list(
+    boss = new("Person")
+  )
+)
 
+John = new("Employee", boss = new("Person", name = "Mark"))
+
+is(John)[[1]]
+```
+
+This notation generalizes to subclasses. I'm not sure why he uses double brackets as `is` produces a character vector. 
+
+4. 
+```{r}
+setMethod("age", "Person", function(object) object@age)
+
+age(Zach)
+```
+
+Works, but throws a warning. 
 
 
