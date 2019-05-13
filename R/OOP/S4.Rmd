@@ -189,3 +189,45 @@ age(Zach)
 Works, but throws a warning. 
 
 
+## 15.5.5
+
+This doesn't seem extremely useful in our case. If anyone has plans on developing an S4 system, I can take the time to build out the method dispatch graphs.
+
+
+## 15.6.3
+
+1. What would a full setOldClass() definition look like for an ordered factor (i.e. add slots and prototype the definition above)?
+
+```{r}
+
+x = factor(c("b", "a", "a", "c"),
+           levels = c("b", "a", "c"),
+           ordered = TRUE)
+str(x)
+attributes(x)
+
+# create class
+setClass("OrderedFactor",
+         contains = "integer",
+         slots = c(
+           levels = "character"
+         ),
+         prototype = c(
+           integer(),
+           levels = NA_integer_
+         ))
+
+setOldClass(c("ordered", "factor"), S4Class = "OrderedFactor")
+
+```
+
+
+2. Define a length method for the Person class.
+
+```{r}
+length.Person = function(object) {length(object@name)}
+setMethod('length', "Person", length.Person)
+
+length(Zach)
+```
+
