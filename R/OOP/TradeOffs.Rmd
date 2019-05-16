@@ -1,0 +1,26 @@
+---
+title: "Trade-Offs"
+author: "Zach Schuster"
+date: "5/16/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Overall, when picking an OO system, I recommend that you default to S3. S3 is simple, and widely used throughout base R and CRAN. While it’s far from perfect, its idiosyncrasies are well understood and there are known approaches to overcome most shortcomings. If you have an existing background in programming you are likely to lean towards R6, because it will feel familiar. I think you should resist this tendency for two reasons. Firstly, if you use R6 it’s very easy to create a non-idiomatic API that will feel very odd to native R users, and will have surprising pain points because of the reference semantics. Secondly, if you stick to R6, you’ll lose out on learning a new way of thinking about OOP that gives you a new set of tools for solving problems.
+
+* S4 is a better system than S3 for large teams. This is because it is more structured to begin with, so there will not be as much training to bring new team members up to speed. 
+
+* R6 is far different than S3 and S4. It can be tough for native R users to get behind. However, objects can be modified in place which is very helpful (can also be dangerous). Also, if you set up your methods properly, you can chain methods and it will act like piping.
+
+### Namespacing
+
+The advantage of a global namespace is that multiple packages can use the same verbs for working with different types of objects. Generic functions provide a uniform API that makes it easier to perform typical actions with a new object because there are strong naming conventions. This works well for data analysis because you often want to do the same thing to different types of objects. In particular, this is one reason that R’s modelling system is so useful: regardless of where the model has been implemented you always work with it using the same set of tools (summary(), predict(), …).
+
+### Threading State
+
+*Go over example in book*
+
+This problem is known as threading state or accumulator programming, because no matter how deeply the pop() is called, you have to thread the modified stack object all the way back to where it lives
