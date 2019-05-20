@@ -296,7 +296,6 @@ formals(`[`)
 
 This is difficult to find because is an operator which is generic. 
 
-## LEFT OFF HERE
 
 ## 13.5.1
 
@@ -315,6 +314,11 @@ This is pretty confusing to me. No real 'styles' were mentioned above
 
 ```{r}
 ?lm
+data("mtcars")
+
+mod = lm(mpg ~ hp, data = mtcars)
+class(mod)
+class(unclass(mod))
 ```
 
 Look at the Value section of the documentation to build a list. In addition, you will need to set the class to "lm".

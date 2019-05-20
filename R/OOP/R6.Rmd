@@ -94,6 +94,9 @@ ovdft
 
 ```
 
+
+## LEFT OFF HERE
+
 2. Create an R6 class that represents a shuffled deck of cards. You should be able to draw cards from the deck with $draw(n), and return all cards to the deck and reshuffle with $reshuffle(). Use the following code to make a vector of cards.
 
 ```{r}
