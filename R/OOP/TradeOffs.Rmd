@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(zeallot)
 ```
 
 Overall, when picking an OO system, I recommend that you default to S3. S3 is simple, and widely used throughout base R and CRAN. While it’s far from perfect, its idiosyncrasies are well understood and there are known approaches to overcome most shortcomings. If you have an existing background in programming you are likely to lean towards R6, because it will feel familiar. I think you should resist this tendency for two reasons. Firstly, if you use R6 it’s very easy to create a non-idiomatic API that will feel very odd to native R users, and will have surprising pain points because of the reference semantics. Secondly, if you stick to R6, you’ll lose out on learning a new way of thinking about OOP that gives you a new set of tools for solving problems.
@@ -23,4 +24,24 @@ The advantage of a global namespace is that multiple packages can use the same v
 
 *Go over example in book*
 
-This problem is known as threading state or accumulator programming, because no matter how deeply the pop() is called, you have to thread the modified stack object all the way back to where it lives
+This problem is known as threading state or accumulator programming, because no matter how deeply the pop() is called, you have to thread the modified stack object all the way back to where it lives.
+
+** This is an interesting side note. We can do multiple assign with the `%<-%` operator from the `zeallot` package.
+
+```{r}
+# vector
+c(x, y) %<-% c(5, 10)
+
+x; y
+
+# list
+c(x, y) %<-% list(8, 12)
+x; y
+
+```
+
+## Method Chaining
+
+"The pipe, `%>%`, is useful because it provides an infix operator that makes it easy to compose functions from left-to-right. Interestingly, the pipe is not so important for R6 objects because they already use an infix operator: $""
+
+"This technique is commonly used in other programming languages, like Python and JavaScript, and is made possible with one convention: any R6 method that is primarily called for its side-effects (usually modifying the object) should return invisible(self)."
