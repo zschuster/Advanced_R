@@ -1,0 +1,90 @@
+---
+title: "Functionals"
+author: "Zach Schuster"
+date: "8/9/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+### I will only be showing questions that may be insightful
+
+* It's a mistake to focus on sped until you know it'll be a problem.
+
+## Excercised 11.1.2
+
+3. Use both for loops and lapply() to fit linear models to the mtcars using the formulas stored in this list:
+
+```{r}
+formulas <- list(
+  mpg ~ disp,
+  mpg ~ I(1 / disp),
+  mpg ~ disp + wt,
+  mpg ~ I(1 / disp) + wt
+)
+
+data(mtcars)
+
+# for loop
+for_models = vector(mode = 'list', length = length(formulas))
+for (i in seq_along(formulas)) {
+  for_models[[i]] = lm(formula = formulas[[i]], data = mtcars)
+}
+
+# lapply
+lap_models = lapply(formulas, lm, data = mtcars)
+```
+
+
+## 11.2
+
+* `sapply` is fine for interactive use, but a really bad idea for use in functions. use `vapply` whenever you can.
+
+You may be more familiar with mapply() than Map(). I prefer Map() because:
+
+* It’s equivalent to mapply with simplify = FALSE, which is almost always what you want.
+
+* Instead of using an anonymous function to provide constant inputs, mapply has the MoreArgs argument that takes a list of extra arguments that will be supplied, as is, to each call. This breaks R’s usual lazy evaluation semantics, and is inconsistent with other functions.
+
+In brief, mapply() adds more complication for little gain.
+
+### Exercises 11.2.5
+
+1. Use vapply() to:
+
+* Compute the standard deviation of every column in a numeric data frame.
+
+* Compute the standard deviation of every numeric column in a mixed data frame. (Hint: you’ll need to use vapply() twice.)
+
+```{r}
+
+# numeric data
+vapply(mtcars, sd, numeric(1))
+
+# We will do the second piece of this question the way Hadley mentions and then
+# also only using vapply once
+data("iris")
+
+# using 2 vapplys
+vapply(iris[, vapply(iris, is.numeric, logical(1))],
+       FUN = sd,
+       numeric(1)
+       )
+
+# using 1 vapply (output isn't as clean but you also then see all columns)
+vapply(iris,
+       function(x) ifelse(is.numeric(x), sd(x), NA_real_),
+       numeric(1))
+
+```
+
+2. Why is using sapply() to get the class() of each element in a data frame dangerous?
+
+  * Class can return different length vectors which can break code
+
+4. What does replicate() do? What sort of for loop does it eliminate? Why do its arguments differ from lapply() and friends?
+
