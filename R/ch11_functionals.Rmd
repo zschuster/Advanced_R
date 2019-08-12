@@ -86,5 +86,30 @@ vapply(iris,
 
   * Class can return different length vectors which can break code
 
+
 4. What does replicate() do? What sort of for loop does it eliminate? Why do its arguments differ from lapply() and friends?
+
+`replicate is a wrapper for the common use of sapply for repeated evaluation of an expression (which will usually involve random number generation).`
+
+The arguments differ because it is used to evaluate the same expression a number of times. Commonly used for random number generation
+
+
+5. Implement a version of lapply() that supplies FUN with both the name and the value of each component.
+```{r}
+cm_lapply = function(X, FUN, nm, ...) {
+  # browser()
+  FUN <- match.fun(FUN)
+    if (!is.vector(X) || is.object(X)) 
+        X <- as.list(X)
+    setNames(.Internal(lapply(X, FUN)), nm)
+}
+
+cm_lapply(letters[1:5], function(x) rnorm(1), nm = letters[1:5])
+```
+
+
+** Discuss Questions 6 and 7 out loud in group
+
+
+
 
