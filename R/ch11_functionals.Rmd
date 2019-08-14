@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### I will only be showing questions that may be insightful
 
-* It's a mistake to focus on sped until you know it'll be a problem.
+* It's a mistake to focus on speed until you know it'll be a problem.
 
 ## Excercised 11.1.2
 
@@ -104,12 +104,178 @@ cm_lapply = function(X, FUN, nm, ...) {
     setNames(.Internal(lapply(X, FUN)), nm)
 }
 
-cm_lapply(letters[1:5], function(x) rnorm(1), nm = letters[1:5])
+x = cm_lapply(letters[1:5], function(x) rnorm(1), nm = letters[1:5])
 ```
 
 
 ** Discuss Questions 6 and 7 out loud in group
 
+## Exercises 11.3.4
+
+1. How does apply() arrange the output? Read the documentation and perform some experiments.
+
+If each call to FUN returns a vector of length n, then apply returns an array of dimension c(n, dim(X)[MARGIN]) if n > 1. If n equals 1, apply returns a vector if MARGIN has length 1 and an array of dimension dim(X)[MARGIN] otherwise. If n is 0, the result has length 0 but not necessarily the ‘correct’ dimension.
+
+If the calls to FUN return vectors of different lengths, apply returns a list of length prod(dim(X)[MARGIN]) with dim set to MARGIN if this has length greater than one.
+
+In all cases the result is coerced by as.vector to one of the basic vector types before the dimensions are set, so that (for example) factor results will be coerced to a character array.
+
+```{r}
+(x = matrix(rnorm(12), nrow = 3))
+
+apply(x, 1, sum)
+apply(x, 2, sum)
+
+apply(x, 1, function(x) x + 2) # tricky biz visually
+# you could also get the above result as follows
+t(x) + 2
+
+apply(x, 2, function(x) x + 2)
+
+```
+
+2. There’s no equivalent to split() + vapply(). Should there be? When would it be useful? Implement one yourself.
+
+By default vapply splits a list and applies a function to each split. I could see it being useful for a any sort of nested structure or a data frame that you'd like to apply a function by group. Below is a very naive approach. 
+
+```{r}
+
+svapply = function(x, FUN, FUN_VALUE, split_on) {
+  vapply(split(x, split_on), FUN = FUN, FUN.VALUE = FUN_VALUE)  
+}
+
+data(mtcars)
+svapply(mtcars$mpg, mean, numeric(1), mtcars$cyl)
+
+```
+
+3. Implement a pure R version of split(). (Hint: use unique() and subsetting.) Can you do it without a for loop?
+
+This is implemented for vectors, not data.frames
+
+```{r}
+splitr = function(x, split_vec) {
+  split_levels = sort(unique(split_vec))
+  
+  group_list = vector(mode = 'list', length = length(split_levels))
+  
+  for (i in seq_along(split_levels)) {
+    group_list[[i]] = x[split_vec == split_levels[i]]
+  }
+  
+  setNames(group_list, split_levels)
+}
+
+x = rnorm(100)
+y = sample(LETTERS, 100, replace = TRUE)
+str(splitr(x, y))
+
+```
 
 
+## Exercises 11.4.3
 
+1. Why isn’t is.na() a predicate function? What base R function is closest to being a predicate version of is.na()?
+
+`is.na` can return more than 1 value in certain scenarios and at times not return TRUE/FALSE. `anyNA` is much closer to a predicate for NA values. 
+
+```{r}
+
+is.na(NULL)
+anyNA(NULL)
+
+(tmp = data.frame(a = 1:2, b = c(NA, 4)))
+is.na(tmp)
+anyNA(tmp)
+```
+
+2. Use Filter() and vapply() to create a function that applies a summary statistic to every numeric column in a data frame.
+
+```{r}
+num_vapply = function(df, FUN, FUN_VALUE) {
+  vapply(Filter(is.numeric, df), FUN = FUN, FUN.VALUE = FUN_VALUE)
+}
+
+data(iris)
+num_vapply(iris, mean, numeric(1))
+```
+
+3. refer to online solutions
+
+4. Implement Any(), a function that takes a list and a predicate function, and returns TRUE if the predicate function returns TRUE for any of the inputs. Implement All() similarly.
+
+```{r}
+# could also check to see if sum of vapply > 0 and not use `any`
+Any = function(l, p) {
+  any(
+    vapply(l, p, logical(1))
+  )
+}
+
+# could also check to see if sum of vapply == length(l) and not use `all`
+All = function(l, p) {
+  all(
+    vapply(l, p, logical(1))
+  )
+}
+
+# The above functions will generalize to a data.frame too
+Any(iris, is.numeric)
+All(iris, is.numeric)
+
+```
+
+5. Implement the span() function from Haskell: given a list x and a predicate function f, span returns the location of the longest sequential run of elements where the predicate is true. (Hint: you might find rle() helpful.)
+
+```{r}
+
+# test case will use custom function
+test_func = function(x) all(x < 10)
+test_list = unname(
+  as.list(
+    as.data.frame(replicate(1000, {sample(1:15, 3)}))
+    )
+  )
+
+span = function(l, p) {
+  if(!Any(l, p)) return(NULL)
+  
+  run_lengths = rle(vapply(l, p, logical(1)))
+  pos = which(run_lengths$lengths == max(run_lengths$lengths[run_lengths$values == TRUE]) &
+                    run_lengths$values == TRUE)
+  # will only take the first location
+  pos = pos[1]
+  
+  START = sum(run_lengths$lengths[1:(pos - 1)]) + 1
+  STOP = START + run_lengths$lengths[pos] - 1
+  len = run_lengths$lengths[pos]
+  
+  data.frame(start = START,
+             stop = STOP,
+             length = len)
+}
+
+span(test_list, test_func)
+```
+
+
+## Exercises 11.5.1
+
+1. Implement arg_max(). It should take a function and a vector of inputs, and return the elements of the input where the function returns the highest value. For example, arg_max(-10:5, function(x) x ^ 2) should return -10. arg_max(-5:5, function(x) x ^ 2) should return c(-5, 5). Also implement the matching arg_min() function.
+
+```{r}
+arg_max = function(x, f) {
+  
+  f = match.fun(f)
+  
+  elements = f(x)
+  x[which(elements == max(elements))]
+}
+
+arg_max(-10:5, function(x) x ^ 2)
+arg_max(-5:5, function(x) x ^ 2)
+```
+
+*`arg_min` would look the exact same other than switching `max` to `min`
+
+2. Will complete at a later time.
