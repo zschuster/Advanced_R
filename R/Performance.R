@@ -67,5 +67,6 @@ microbenchmark(
 # This will show that performance for the above tests show miniscule differences
 
 
-
+# I will skip the remainder of this chapter and let colleagues cover it in group
+# learning sessions
 

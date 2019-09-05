@@ -1,0 +1,218 @@
+---
+title: "Advanced R: Rcpp"
+author: "Zach Schuster"
+date: "9/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(microbenchmark)
+library(Rcpp)
+```
+
+```{r}
+
+cppFunction(
+  'int add(int x, int y, int z) {
+    int sum = x + y + z;
+    return sum;
+  }'
+)
+
+add_r = function(x, y, z) {
+  x + y + z
+}
+
+microbenchmark(
+  add(1, 4, 7),
+  add_r(1, 4, 7),
+  times = 1e6
+)
+
+```
+
+here R is faster
+
+
+### Function Comparison
+
+#### no input, scalar output
+
+```{r}
+
+# R
+one = function() 1L
+
+# C++
+cppFunction('
+int one() {
+  return 1;
+}'
+)
+
+```
+
+
+* you don't use assignment to create a funtion in C++  
+* explicit return statement is necessary
+* you must use `;` after every statement in C++
+
+
+#### scalar input, scalar output
+
+```{r}
+
+# R
+signR = function(x) {
+  if (x > 0) {
+    1
+  } else if (x == 0) {
+    0
+  } else {
+    -1
+  }
+}
+
+# C++
+cppFunction('
+            int signC(int x) {
+              if (x > 0) {
+                return 1;
+              } else if (x == 0) {
+                return 0;
+              } else {
+                return -1;
+              }
+            }
+')
+
+microbenchmark(
+  signR(5),
+  signC(5),
+  times = 1e5
+)
+
+```
+
+again we see here that R is much faster than C++
+
+
+#### vector input, scalar output
+
+```{r}
+
+# R. for comparison, not how sum should actually be implemented. I've included a
+# for loop implementation that no longer uses subsetting as well
+sumR = function(x) {
+  total = 0
+  for (i in seq_along(x)) {
+    total = total + x[i]
+  }
+  total
+}
+
+sum_quick_R = function(x) {
+  total = 0
+  for (num in x) {
+    total = total + num
+  }
+  total
+}
+
+cppFunction(
+  'double sumC(NumericVector x) {
+    int n = x.size();
+    double total = 0;
+    for (int i = 0; i < n; ++i) {
+      total += x[i];
+    }
+    return total;
+  }'
+)
+
+```
+
+
+* .size() method finds the length of the vector
+
+* The for statement has a different syntax: for(init; check; increment). This loop is initialised by creating a new variable called i with value 0. Before each iteration we check that i < n, and terminate the loop if it’s not. After each iteration, we increment the value of i by one, using the special prefix operator ++ which increases the value of i by 1.
+
+
+```{r}
+
+x = runif(1e5)
+microbenchmark(
+  sumR(x),
+  sum_quick_R(x),
+  sum(x),
+  sumC(x)
+)
+
+```
+
+The c++ function is about 25-40x faster than the equivalent R function. For loops appear to be a place where C++ can come in handy
+
+
+#### Vector Input, Vector Output
+
+# create a function that takes in a scalar and a vector and calculates euclidean distance between scalar and each element of the vector
+
+```{r}
+# function input types are not clear in R
+pdistR = function(x, ys) {
+  (sqrt(x - ys) ^ 2)
+}
+
+cppFunction('NumericVector pdistC(double x, NumericVector ys) {
+              int n = ys.size();
+              NumericVector out(n);
+              
+              for (int i = 0; i < n; ++i) {
+                out[i] = sqrt(pow(ys[i] - x, 2));
+              }
+              return out;
+            }
+')
+
+x = 7.5
+ys = rnorm(1e6)
+
+microbenchmark(
+  pdistR(x, ys),
+  pdistC(x = x, ys = ys)
+)
+```
+
+* Note that because the R version is fully vectorised, it’s already going to be fast. On my computer, it takes around 8 ms with a 1 million element y vector. The C++ function is twice as fast, ~4 ms, **but assuming it took you 10 minutes to write the C++ function, you’d need to run it ~150,000 times to make rewriting worthwhile**. The reason why the C++ function is faster is subtle, and relates to memory management. The R version needs to create an intermediate vector the same length as y (x - ys), and allocating memory is an expensive operation. The C++ function avoids this overhead because it uses an intermediate scalar.
+
+
+#### Matrix Input, Vector Output
+
+reproduce rowSums
+
+```{r}
+cppFunction('NumericVector rowSumsC(NumericMatrix x) {
+  int nrow = x.nrow(), ncol = x.ncol();
+  NumericVector out(nrow);
+  
+  for (int i = 0; i < nrow; ++i) {
+    for (int j = 0; j < ncol; ++j) {
+      out[i] += x(i, j);
+    }
+  }
+  return out;
+}
+')
+
+x = matrix(rnorm(1e4), nrow = 10)
+all.equal()
+
+microbenchmark(
+  rowSums(x),
+  rowSumsC(x)
+)
+
+```
+
+`rowSumsC` is about twice as fast
