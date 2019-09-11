@@ -206,7 +206,6 @@ cppFunction('NumericVector rowSumsC(NumericMatrix x) {
 ')
 
 x = matrix(rnorm(1e4), nrow = 10)
-all.equal()
 
 microbenchmark(
   rowSums(x),
@@ -216,3 +215,99 @@ microbenchmark(
 ```
 
 `rowSumsC` is about twice as fast
+
+
+## sourceCpp
+
+* must start with:
+
+`#include <Rcpp.h>`
+`using namespace Rcpp;`
+
+```{r}
+
+sourceCpp('mean.cpp')
+
+```
+
+### Exercises 19.1.7
+
+```{cpp }
+
+double f1(NumericVector x) {
+  int n = x.size();
+  double y = 0;
+
+  for(int i = 0; i < n; ++i) {
+    y += x[i] / n;
+  }
+  return y;
+}
+
+// mean
+
+NumericVector f2(NumericVector x) {
+  int n = x.size();
+  NumericVector out(n);
+
+  out[0] = x[0];
+  for(int i = 1; i < n; ++i) {
+    out[i] = out[i - 1] + x[i];
+  }
+  return out;
+}
+
+// cumsum
+
+bool f3(LogicalVector x) {
+  int n = x.size();
+
+  for(int i = 0; i < n; ++i) {
+    if (x[i]) return true;
+  }
+  return false;
+}
+
+// any
+
+int f4(Function pred, List x) {
+  int n = x.size();
+
+  for(int i = 0; i < n; ++i) {
+    LogicalVector res = pred(x[i]);
+    if (res[0]) return i + 1;
+  }
+  return 0;
+}
+
+// Position (had originally guessed which)
+
+NumericVector f5(NumericVector x, NumericVector y) {
+  int n = std::max(x.size(), y.size());
+  NumericVector x1 = rep_len(x, n);
+  NumericVector y1 = rep_len(y, n);
+
+  NumericVector out(n);
+
+  for (int i = 0; i < n; ++i) {
+    out[i] = std::min(x1[i], y1[i]);
+  }
+
+  return out;
+}
+
+// pmin
+
+```
+
+
+
+practice writing function in cpp
+
+1. all()
+2. cumprod(), cummin(), cummax()
+3. diff()
+4. range()
+5. var()
+
+__refer to exercise_funcs.cpp__
