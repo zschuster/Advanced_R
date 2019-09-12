@@ -156,7 +156,7 @@ The c++ function is about 25-40x faster than the equivalent R function. For loop
 
 #### Vector Input, Vector Output
 
-# create a function that takes in a scalar and a vector and calculates euclidean distance between scalar and each element of the vector
+* create a function that takes in a scalar and a vector and calculates euclidean distance between scalar and each element of the vector
 
 ```{r}
 # function input types are not clear in R
@@ -222,6 +222,7 @@ microbenchmark(
 * must start with:
 
 `#include <Rcpp.h>`
+
 `using namespace Rcpp;`
 
 ```{r}
@@ -302,7 +303,7 @@ NumericVector f5(NumericVector x, NumericVector y) {
 
 
 
-practice writing function in cpp
+practice writing functions in cpp
 
 1. all()
 2. cumprod(), cummin(), cummax()
@@ -310,4 +311,9 @@ practice writing function in cpp
 4. range()
 5. var()
 
-__refer to exercise_funcs.cpp__
+__refer to exercise_funcs.cpp for source code__
+
+```{r}
+Rcpp::sourceCpp('exercise_funcs.cpp')
+```
+

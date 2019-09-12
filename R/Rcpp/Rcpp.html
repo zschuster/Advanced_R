@@ -388,8 +388,8 @@ microbenchmark(
 )</code></pre>
 <pre><code>## Unit: nanoseconds
 ##            expr  min   lq      mean median   uq      max   neval
-##    add(1, 4, 7) 1159 1456 1954.0213   1583 1756 47153469 1000000
-##  add_r(1, 4, 7)  391  451  572.4764    522  644  1232723 1000000</code></pre>
+##    add(1, 4, 7) 1179 1508 1988.6080   1634 1803 47715360 1000000
+##  add_r(1, 4, 7)  386  451  567.1046    518  635  1243163 1000000</code></pre>
 <p>here R is faster</p>
 <div id="function-comparison" class="section level3">
 <h3>Function Comparison</h3>
@@ -443,9 +443,9 @@ microbenchmark(
   times = 1e5
 )</code></pre>
 <pre><code>## Unit: nanoseconds
-##      expr min   lq      mean median   uq     max  neval
-##  signR(5) 236  281  448.4997    319  413 4740080 100000
-##  signC(5) 941 1183 1684.0889   1320 1608 5360577 100000</code></pre>
+##      expr min   lq     mean median   uq     max  neval
+##  signR(5) 237  271  380.894    298  382 2440638 100000
+##  signC(5) 945 1218 1755.703   1359 1637 5278686 100000</code></pre>
 <p>again we see here that R is much faster than C++</p>
 </div>
 <div id="vector-input-scalar-output" class="section level4">
@@ -490,11 +490,11 @@ microbenchmark(
   sumC(x)
 )</code></pre>
 <pre><code>## Unit: microseconds
-##            expr      min        lq       mean    median        uq      max
-##         sumR(x) 3934.247 3944.9235 4022.43485 3961.2900 3990.3175 6566.926
-##  sum_quick_R(x) 2587.278 2596.1165 2635.63275 2604.3205 2626.0985 4523.587
-##          sum(x)   97.600   98.0945   99.86914   98.7385   99.8285  145.574
-##         sumC(x)  130.751  131.2845  141.96209  132.6670  135.4310  955.432
+##            expr      min        lq       mean    median       uq      max
+##         sumR(x) 3885.672 3902.7150 3982.79153 3922.0775 3948.965 6283.422
+##  sum_quick_R(x) 2601.089 2611.9205 2664.17780 2625.7925 2645.063 4725.861
+##          sum(x)   97.431   98.0270   99.44791   98.5795  100.039  110.199
+##         sumC(x)  130.630  131.0915  142.02842  132.3135  135.094  962.183
 ##  neval
 ##    100
 ##    100
@@ -504,10 +504,9 @@ microbenchmark(
 </div>
 <div id="vector-input-vector-output" class="section level4">
 <h4>Vector Input, Vector Output</h4>
-</div>
-</div>
-<div id="create-a-function-that-takes-in-a-scalar-and-a-vector-and-calculates-euclidean-distance-between-scalar-and-each-element-of-the-vector" class="section level1">
-<h1>create a function that takes in a scalar and a vector and calculates euclidean distance between scalar and each element of the vector</h1>
+<ul>
+<li>create a function that takes in a scalar and a vector and calculates euclidean distance between scalar and each element of the vector</li>
+</ul>
 <pre class="r"><code># function input types are not clear in R
 pdistR = function(x, ys) {
   (sqrt(x - ys) ^ 2)
@@ -533,14 +532,15 @@ microbenchmark(
 )</code></pre>
 <pre><code>## Unit: milliseconds
 ##                    expr      min       lq     mean   median       uq
-##           pdistR(x, ys) 4.101293 7.148531 6.836944 7.247221 7.323504
-##  pdistC(x = x, ys = ys) 6.611394 9.894163 9.429370 9.913663 9.943632
-##       max neval
-##   9.34296   100
-##  10.56197   100</code></pre>
+##           pdistR(x, ys) 4.185206 7.284510 7.165120 7.366575 7.426314
+##  pdistC(x = x, ys = ys) 6.637570 9.956114 9.857867 9.972345 9.994246
+##        max neval
+##   9.257914   100
+##  11.189570   100</code></pre>
 <ul>
 <li>Note that because the R version is fully vectorised, it’s already going to be fast. On my computer, it takes around 8 ms with a 1 million element y vector. The C++ function is twice as fast, ~4 ms, <strong>but assuming it took you 10 minutes to write the C++ function, you’d need to run it ~150,000 times to make rewriting worthwhile</strong>. The reason why the C++ function is faster is subtle, and relates to memory management. The R version needs to create an intermediate vector the same length as y (x - ys), and allocating memory is an expensive operation. The C++ function avoids this overhead because it uses an intermediate scalar.</li>
 </ul>
+</div>
 <div id="matrix-input-vector-output" class="section level4">
 <h4>Matrix Input, Vector Output</h4>
 <p>reproduce rowSums</p>
@@ -564,17 +564,19 @@ microbenchmark(
   rowSumsC(x)
 )</code></pre>
 <pre><code>## Unit: microseconds
-##         expr    min      lq     mean  median     uq     max neval
-##   rowSums(x) 26.647 26.9675 27.64392 27.1945 27.531  50.291   100
-##  rowSumsC(x) 14.124 14.3670 25.28727 14.4775 14.654 978.381   100</code></pre>
+##         expr   min      lq     mean  median     uq      max neval
+##   rowSums(x) 26.65 26.9825 27.86841 27.2225 27.519   58.797   100
+##  rowSumsC(x) 14.12 14.4085 25.83254 14.5465 14.792 1024.033   100</code></pre>
 <p><code>rowSumsC</code> is about twice as fast</p>
+</div>
 </div>
 <div id="sourcecpp" class="section level2">
 <h2>sourceCpp</h2>
 <ul>
 <li>must start with:</li>
 </ul>
-<p><code>#include &lt;Rcpp.h&gt;</code> <code>using namespace Rcpp;</code></p>
+<p><code>#include &lt;Rcpp.h&gt;</code></p>
+<p><code>using namespace Rcpp;</code></p>
 <pre class="r"><code>sourceCpp('mean.cpp')</code></pre>
 <pre><code>## 
 ## &gt; z = runif(1000000)
@@ -582,8 +584,8 @@ microbenchmark(
 ## &gt; microbenchmark::microbenchmark(R = mean(z), Cpp = meanC(z))
 ## Unit: milliseconds
 ##  expr      min       lq     mean   median       uq      max neval
-##     R 1.945742 1.949930 1.958513 1.959233 1.963722 1.987666   100
-##   Cpp 1.295366 1.298234 1.318018 1.304527 1.310849 2.386072   100</code></pre>
+##     R 1.945175 1.948482 1.957082 1.957353 1.962100 2.051116   100
+##   Cpp 1.294980 1.296584 1.316523 1.299349 1.310121 2.418216   100</code></pre>
 <div id="exercises-19.1.7" class="section level3">
 <h3>Exercises 19.1.7</h3>
 <pre class="cpp"><code>
@@ -651,7 +653,69 @@ NumericVector f5(NumericVector x, NumericVector y) {
 
 // pmin
 </code></pre>
-</div>
+<p>practice writing functions in cpp</p>
+<ol style="list-style-type: decimal">
+<li>all()</li>
+<li>cumprod(), cummin(), cummax()</li>
+<li>diff()</li>
+<li>range()</li>
+<li>var()</li>
+</ol>
+<p><strong>refer to exercise_funcs.cpp for source code</strong></p>
+<pre class="r"><code>Rcpp::sourceCpp('exercise_funcs.cpp')</code></pre>
+<pre><code>## 
+## &gt; bool_vec = 1:10 &gt; 0
+## 
+## &gt; allC(bool_vec)
+## [1] TRUE
+## 
+## &gt; set.seed(1776)
+## 
+## &gt; x = sample(1:100, 5)
+## 
+## &gt; cumprod(x)
+## [1]      10     180   14760   59040 5667840
+## 
+## &gt; cumprodC(x)
+## [1]      10     180   14760   59040 5667840
+## 
+## &gt; cummin(x)
+## [1] 10 10 10  4  4
+## 
+## &gt; cumminC(x)
+## [1] 10 10 10  4  4
+## 
+## &gt; diff(x)
+## [1]   8  64 -78  92
+## 
+## &gt; diffC(x)
+## [1]   8  64 -78  92
+## 
+## &gt; diff(x, lag = 3)
+## [1] -6 78
+## 
+## &gt; diffC(x, lag = 3)
+## [1] -6 78
+## 
+## &gt; range(x)
+## [1]  4 96
+## 
+## &gt; rangeC(x)
+## [1]  4 96
+## 
+## &gt; z = runif(1000000)
+## 
+## &gt; microbenchmark::microbenchmark(R = diff(z), `C++` = diffC(z))
+## Unit: milliseconds
+##  expr       min        lq      mean   median       uq     max neval
+##     R 10.935101 11.733811 22.920518 12.52726 37.84906 58.7674   100
+##   C++  1.718041  2.023225  5.331213  2.20188  2.95595 48.7715   100
+## 
+## &gt; var(z)
+## [1] 0.08335888
+## 
+## &gt; varC(z)
+## [1] 0.08335888</code></pre>
 </div>
 </div>
 
