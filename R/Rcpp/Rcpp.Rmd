@@ -233,7 +233,9 @@ sourceCpp('mean.cpp')
 
 ### Exercises 19.1.7
 
-```{cpp }
+What R function does the c++ code represent?
+
+```{cpp eval = FALSE}
 
 double f1(NumericVector x) {
   int n = x.size();
@@ -316,4 +318,42 @@ __refer to exercise_funcs.cpp for source code__
 ```{r}
 Rcpp::sourceCpp('exercise_funcs.cpp')
 ```
+
+
+### Attributes and other classes
+
+Look at `attribs.cpp` for example
+
+```{r}
+Rcpp::sourceCpp('attribs.cpp')
+```
+
+
+### Missing Values
+
+#### scalars
+
+```{r}
+cppFunction(
+  "List scalar_missings() {
+  int int_s = NA_INTEGER;
+  String chr_s = NA_STRING;
+  bool lgl_s = NA_LOGICAL;
+  double num_s = NA_REAL;
+  
+  return List::create(int_s, chr_s, lgl_s, num_s);
+  }"
+)
+
+str(scalar_missings())
+```
+
+#### Show in online book some of the finicky examples with missing values. 
+
+### 19.3.5 Exercises
+
+```{r}
+Rcpp::sourceCpp()
+```
+
 
