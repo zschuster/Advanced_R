@@ -388,8 +388,8 @@ microbenchmark(
 )</code></pre>
 <pre><code>## Unit: nanoseconds
 ##            expr  min   lq      mean median   uq      max   neval
-##    add(1, 4, 7) 1179 1508 1988.6080   1634 1803 47715360 1000000
-##  add_r(1, 4, 7)  386  451  567.1046    518  635  1243163 1000000</code></pre>
+##    add(1, 4, 7) 1153 1472 1955.3547   1605 1772 47204007 1000000
+##  add_r(1, 4, 7)  385  452  579.2539    527  653  2015865 1000000</code></pre>
 <p>here R is faster</p>
 <div id="function-comparison" class="section level3">
 <h3>Function Comparison</h3>
@@ -443,9 +443,9 @@ microbenchmark(
   times = 1e5
 )</code></pre>
 <pre><code>## Unit: nanoseconds
-##      expr min   lq     mean median   uq     max  neval
-##  signR(5) 237  271  380.894    298  382 2440638 100000
-##  signC(5) 945 1218 1755.703   1359 1637 5278686 100000</code></pre>
+##      expr min   lq      mean median   uq     max  neval
+##  signR(5) 228  262  468.3822    292  385 4598466 100000
+##  signC(5) 932 1198 1634.5122   1342 1585 5187589 100000</code></pre>
 <p>again we see here that R is much faster than C++</p>
 </div>
 <div id="vector-input-scalar-output" class="section level4">
@@ -490,11 +490,11 @@ microbenchmark(
   sumC(x)
 )</code></pre>
 <pre><code>## Unit: microseconds
-##            expr      min        lq       mean    median       uq      max
-##         sumR(x) 3885.672 3902.7150 3982.79153 3922.0775 3948.965 6283.422
-##  sum_quick_R(x) 2601.089 2611.9205 2664.17780 2625.7925 2645.063 4725.861
-##          sum(x)   97.431   98.0270   99.44791   98.5795  100.039  110.199
-##         sumC(x)  130.630  131.0915  142.02842  132.3135  135.094  962.183
+##            expr      min        lq      mean    median       uq      max
+##         sumR(x) 3887.310 3894.5075 3952.4370 3907.6715 3942.044 6521.803
+##  sum_quick_R(x) 2586.064 2595.3390 2635.0557 2605.2145 2627.446 4611.848
+##          sum(x)   97.423   97.9550  100.1037   99.0225  100.546  130.302
+##         sumC(x)  130.561  131.3825  143.5648  134.1930  135.762 1029.122
 ##  neval
 ##    100
 ##    100
@@ -532,11 +532,11 @@ microbenchmark(
 )</code></pre>
 <pre><code>## Unit: milliseconds
 ##                    expr      min       lq     mean   median       uq
-##           pdistR(x, ys) 4.185206 7.284510 7.165120 7.366575 7.426314
-##  pdistC(x = x, ys = ys) 6.637570 9.956114 9.857867 9.972345 9.994246
+##           pdistR(x, ys) 4.109246 7.570759 7.288028 7.616615 7.658393
+##  pdistC(x = x, ys = ys) 6.633292 9.923185 9.818870 9.938298 9.956763
 ##        max neval
-##   9.257914   100
-##  11.189570   100</code></pre>
+##   9.528923   100
+##  10.753422   100</code></pre>
 <ul>
 <li>Note that because the R version is fully vectorised, it’s already going to be fast. On my computer, it takes around 8 ms with a 1 million element y vector. The C++ function is twice as fast, ~4 ms, <strong>but assuming it took you 10 minutes to write the C++ function, you’d need to run it ~150,000 times to make rewriting worthwhile</strong>. The reason why the C++ function is faster is subtle, and relates to memory management. The R version needs to create an intermediate vector the same length as y (x - ys), and allocating memory is an expensive operation. The C++ function avoids this overhead because it uses an intermediate scalar.</li>
 </ul>
@@ -564,9 +564,9 @@ microbenchmark(
   rowSumsC(x)
 )</code></pre>
 <pre><code>## Unit: microseconds
-##         expr   min      lq     mean  median     uq      max neval
-##   rowSums(x) 26.65 26.9825 27.86841 27.2225 27.519   58.797   100
-##  rowSumsC(x) 14.12 14.4085 25.83254 14.5465 14.792 1024.033   100</code></pre>
+##         expr    min      lq     mean  median      uq     max neval
+##   rowSums(x) 26.727 27.0045 27.85420 27.1575 27.4740  66.346   100
+##  rowSumsC(x) 14.138 14.4005 25.18062 14.5435 14.6925 982.385   100</code></pre>
 <p><code>rowSumsC</code> is about twice as fast</p>
 </div>
 </div>
@@ -584,10 +584,11 @@ microbenchmark(
 ## &gt; microbenchmark::microbenchmark(R = mean(z), Cpp = meanC(z))
 ## Unit: milliseconds
 ##  expr      min       lq     mean   median       uq      max neval
-##     R 1.945175 1.948482 1.957082 1.957353 1.962100 2.051116   100
-##   Cpp 1.294980 1.296584 1.316523 1.299349 1.310121 2.418216   100</code></pre>
+##     R 1.944253 1.947464 1.955694 1.956510 1.959128 2.020753   100
+##   Cpp 1.294952 1.296337 1.315314 1.298418 1.308559 2.400332   100</code></pre>
 <div id="exercises-19.1.7" class="section level3">
 <h3>Exercises 19.1.7</h3>
+<p>What R function does the c++ code represent?</p>
 <pre class="cpp"><code>
 double f1(NumericVector x) {
   int n = x.size();
@@ -707,9 +708,9 @@ NumericVector f5(NumericVector x, NumericVector y) {
 ## 
 ## &gt; microbenchmark::microbenchmark(R = diff(z), `C++` = diffC(z))
 ## Unit: milliseconds
-##  expr       min        lq      mean   median       uq     max neval
-##     R 10.935101 11.733811 22.920518 12.52726 37.84906 58.7674   100
-##   C++  1.718041  2.023225  5.331213  2.20188  2.95595 48.7715   100
+##  expr       min        lq      mean    median       uq      max neval
+##     R 10.963665 11.807404 23.213843 12.620596 39.15147 67.65045   100
+##   C++  1.832515  2.093397  5.337553  2.529468  3.66836 46.21294   100
 ## 
 ## &gt; var(z)
 ## [1] 0.08335888
@@ -717,6 +718,127 @@ NumericVector f5(NumericVector x, NumericVector y) {
 ## &gt; varC(z)
 ## [1] 0.08335888</code></pre>
 </div>
+<div id="attributes-and-other-classes" class="section level3">
+<h3>Attributes and other classes</h3>
+<p>Look at <code>attribs.cpp</code> for example</p>
+<pre class="r"><code>Rcpp::sourceCpp('attribs.cpp')</code></pre>
+<pre><code>## 
+## &gt; attribs()
+## a b c 
+## 1 2 3 
+## attr(,&quot;my-attr&quot;)
+## [1] &quot;my-value&quot;
+## attr(,&quot;my-class&quot;)
+## [1] &quot;my-class&quot;</code></pre>
+</div>
+<div id="missing-values" class="section level3">
+<h3>Missing Values</h3>
+<div id="scalars" class="section level4">
+<h4>scalars</h4>
+<pre class="r"><code>cppFunction(
+  &quot;List scalar_missings() {
+  int int_s = NA_INTEGER;
+  String chr_s = NA_STRING;
+  bool lgl_s = NA_LOGICAL;
+  double num_s = NA_REAL;
+  
+  return List::create(int_s, chr_s, lgl_s, num_s);
+  }&quot;
+)
+
+str(scalar_missings())</code></pre>
+<pre><code>## List of 4
+##  $ : int NA
+##  $ : chr NA
+##  $ : logi TRUE
+##  $ : num NA</code></pre>
+</div>
+<div id="show-in-online-book-some-of-the-finicky-examples-with-missing-values." class="section level4">
+<h4>Show in online book some of the finicky examples with missing values.</h4>
+</div>
+</div>
+<div id="exercises" class="section level3">
+<h3>19.3.5 Exercises</h3>
+<p>Only did Q1</p>
+<pre class="r"><code>Rcpp::sourceCpp('var_narm.cpp')</code></pre>
+<pre><code>## 
+## &gt; x = sample(c(rnorm(100000), rep(NA, 10000)))
+## 
+## &gt; var_narm(x)
+## [1] NA
+## 
+## &gt; var(x)
+## [1] NA
+## 
+## &gt; y = rnorm(100)
+## 
+## &gt; var_narm(y)
+## [1] 0.913719
+## 
+## &gt; var(y)
+## [1] 0.913719
+## 
+## &gt; var_narm(x, na_rm = TRUE)
+## [1] 1.004326
+## 
+## &gt; var(x, na.rm = TRUE)
+## [1] 1.004326</code></pre>
+</div>
+</div>
+<div id="rcpp-sugar" class="section level2">
+<h2>Rcpp Sugar</h2>
+<p><strong>If there’s a sugar version of the function you’re interested in, you should use it: it’ll be both expressive and well tested.</strong></p>
+<p>Sugar functions can be roughly broken down into</p>
+<ul>
+<li>arithmetic and logical operators</li>
+<li>logical summary functions</li>
+<li>vector views</li>
+<li>other useful functions</li>
+</ul>
+<pre class="r"><code>cppFunction('NumericVector pdistC2(double x, NumericVector ys) {
+              return sqrt(pow((x - ys), 2));
+            }
+')
+
+x = 7.5
+ys = rnorm(1e6)
+
+microbenchmark(
+  pdistR(x, ys),
+  pdistC(x = x, ys = ys),
+  sugar = pdistC2(x = x, ys = ys)
+)</code></pre>
+<pre><code>## Unit: milliseconds
+##                    expr      min       lq     mean   median       uq
+##           pdistR(x, ys) 3.953437 4.071193 4.379757 4.123050 4.281968
+##  pdistC(x = x, ys = ys) 6.601108 6.623402 7.303053 6.639527 6.665468
+##                   sugar 5.829833 5.841458 6.110374 5.849461 5.885165
+##        max neval
+##   7.667544   100
+##  50.165329   100
+##  10.515867   100</code></pre>
+<ul>
+<li>Go over ‘other useful functions’</li>
+</ul>
+</div>
+<div id="stl" class="section level2">
+<h2>STL</h2>
+<ul>
+<li>go over stl in book</li>
+</ul>
+</div>
+<div id="case-studies" class="section level2">
+<h2>Case Studies</h2>
+<ul>
+<li>go over gibbs sampler (pg 424 in book)</li>
+<li>skip vectorization example</li>
+</ul>
+</div>
+<div id="using-rcpp-in-a-package" class="section level2">
+<h2>Using Rcpp in a package</h2>
+<ul>
+<li>go over in review</li>
+</ul>
 </div>
 
 

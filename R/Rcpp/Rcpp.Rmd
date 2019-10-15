@@ -352,8 +352,53 @@ str(scalar_missings())
 
 ### 19.3.5 Exercises
 
+ Only did Q1
+
 ```{r}
-Rcpp::sourceCpp()
+Rcpp::sourceCpp('var_narm.cpp')
 ```
 
 
+## Rcpp Sugar
+
+__If there’s a sugar version of the function you’re interested in, you should use it: it’ll be both expressive and well tested.__
+ 
+Sugar functions can be roughly broken down into
+
+* arithmetic and logical operators
+* logical summary functions
+* vector views
+* other useful functions
+
+```{r}
+
+cppFunction('NumericVector pdistC2(double x, NumericVector ys) {
+              return sqrt(pow((x - ys), 2));
+            }
+')
+
+x = 7.5
+ys = rnorm(1e6)
+
+microbenchmark(
+  pdistR(x, ys),
+  pdistC(x = x, ys = ys),
+  sugar = pdistC2(x = x, ys = ys)
+)
+
+```
+
+* Go over 'other useful functions' 
+
+## STL
+
+* go over stl in book
+
+## Case Studies
+
+* go over gibbs sampler (pg 424 in book)
+* skip vectorization example
+
+## Using Rcpp in a package
+
+* go over in review
